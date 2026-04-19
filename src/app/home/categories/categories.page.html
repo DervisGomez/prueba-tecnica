@@ -1,0 +1,186 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Categorías</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="cat-content">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Categorías</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="cat-inner">
+    @if (categories$ | async; as categories) {
+      @if (categories.length === 0) {
+        <section class="empty-state" aria-live="polite">
+          <div class="empty-state__icon" aria-hidden="true">
+            <ion-icon name="pricetags-outline"></ion-icon>
+          </div>
+          <h2 class="empty-state__title">Sin categorías</h2>
+          <p class="empty-state__hint">
+            Pulsa el botón flotante + abajo a la derecha para crear una categoría y organizar
+            tus tareas en la pantalla principal.
+          </p>
+        </section>
+      } @else {
+        <section
+          class="cat-stats"
+          [attr.aria-label]="
+            categories.length === 1
+              ? '1 categoría en total'
+              : categories.length + ' categorías en total'
+          "
+        >
+          <article class="cat-stats__tile">
+            <div class="cat-stats__icon-wrap" aria-hidden="true">
+              <ion-icon name="pricetags-outline"></ion-icon>
+            </div>
+            <div class="cat-stats__text">
+              <span class="cat-stats__value">{{ categories.length }}</span>
+              <span class="cat-stats__label">{{
+                categories.length === 1 ? 'Categoría' : 'Categorías'
+              }}</span>
+            </div>
+          </article>
+        </section>
+        <ion-list class="cat-list" lines="none" inset="true">
+          @for (cat of categories; track cat.id) {
+            <ion-item class="cat-item" lines="none" [attr.aria-label]="'Categoría ' + cat.name">
+              <ion-label class="cat-item__label">
+                <div class="cat-item__row">
+                  <span
+                    class="cat-item__dot"
+                    aria-hidden="true"
+                    [style.background]="cat.color"
+                  ></span>
+                  <h2 class="cat-item__name">{{ cat.name }}</h2>
+                </div>
+              </ion-label>
+              <ion-buttons slot="end" class="cat-item__actions">
+                <ion-button
+                  fill="clear"
+                  class="cat-item__action"
+                  (click)="openEdit(cat)"
+                  aria-label="Editar categoría"
+                >
+                  <ion-icon slot="icon-only" name="create-outline" aria-hidden="true"></ion-icon>
+                </ion-button>
+                <ion-button
+                  fill="clear"
+                  color="danger"
+                  class="cat-item__action"
+                  (click)="confirmDelete(cat)"
+                  aria-label="Eliminar categoría"
+                >
+                  <ion-icon slot="icon-only" name="trash-outline" aria-hidden="true"></ion-icon>
+                </ion-button>
+              </ion-buttons>
+            </ion-item>
+          }
+        </ion-list>
+      }
+    }
+  </div>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button (click)="openAddModal()" aria-label="Nueva categoría">
+      <ion-icon name="add" aria-hidden="true"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <ion-modal
+    class="cat-modal-host"
+    [isOpen]="categoryModalOpen"
+    (didDismiss)="closeCategoryModal()"
+  >
+    <ng-template>
+      <ion-header class="ion-no-border">
+        <ion-toolbar class="cat-modal__toolbar">
+          <ion-title class="cat-modal__title">{{ modalTitle }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button
+              fill="clear"
+              class="cat-modal__close"
+              (click)="closeCategoryModal()"
+              aria-label="Cerrar"
+            >
+              <ion-icon slot="icon-only" name="close-circle" aria-hidden="true"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="cat-modal">
+        <div class="cat-modal__body">
+          <div class="cat-modal__group">
+            <div class="cat-modal__label-row">
+              <span class="cat-modal__field-label">Nombre</span>
+            </div>
+            <ion-item lines="none" class="cat-modal__control cat-modal__control--textarea">
+              <ion-textarea
+                [(ngModel)]="modalName"
+                [autoGrow]="true"
+                [rows]="1"
+                maxlength="80"
+                placeholder="Ej. Trabajo, Personal…"
+                inputmode="text"
+                enterkeyhint="enter"
+                (ionInput)="onModalNameInput()"
+                aria-label="Nombre de la categoría"
+              ></ion-textarea>
+            </ion-item>
+          </div>
+
+          <div class="cat-modal__group">
+            <div class="cat-modal__label-row">
+              <span class="cat-modal__field-label">Color</span>
+              <span
+                class="cat-modal__color-dot"
+                aria-hidden="true"
+                [style.background]="modalColor"
+              ></span>
+            </div>
+            <div class="cat-modal__palette-box" role="list">
+              <div class="palette">
+                @for (hex of palette; track hex) {
+                  <button
+                    type="button"
+                    class="palette__swatch"
+                    [class.palette__swatch--active]="modalColor === hex"
+                    [style.background]="hex"
+                    [attr.aria-label]="'Color ' + hex"
+                    [attr.aria-pressed]="modalColor === hex"
+                    (click)="pickModalColor(hex)"
+                  ></button>
+                }
+              </div>
+            </div>
+            <ion-item lines="none" class="cat-modal__control cat-modal__control--color">
+              <ion-input
+                type="color"
+                [(ngModel)]="modalColor"
+                label="Ajuste fino"
+                labelPlacement="stacked"
+                class="native-color"
+                (ionChange)="onModalColorChange()"
+              ></ion-input>
+            </ion-item>
+          </div>
+
+          <ion-button
+            expand="block"
+            class="cat-modal__submit"
+            (click)="saveCategoryModal()"
+            [disabled]="!modalName.trim()"
+          >
+            {{ modalSaveLabel }}
+          </ion-button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>

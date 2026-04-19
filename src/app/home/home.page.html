@@ -1,20 +1,281 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Blank
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
+@if (vm$ | async; as vm) {
+  <ion-header [translucent]="true">
     <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
+      <ion-title>Mis tareas</ion-title>
+      <ion-buttons slot="end">
+        <ion-button routerLink="categorias" aria-label="Gestionar categorías">
+          <ion-icon slot="icon-only" name="pricetags-outline" aria-hidden="true"></ion-icon>
+        </ion-button>
+      </ion-buttons>
     </ion-toolbar>
   </ion-header>
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
-  </div>
-</ion-content>
+  <ion-content [fullscreen]="true" class="tasks-content">
+    <ion-header collapse="condense">
+      <ion-toolbar>
+        <ion-title size="large">Mis tareas</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <div class="tasks-inner">
+      @if (vm.categories.length > 0) {
+        <ion-segment
+          class="filter-segment"
+          scrollable="true"
+          [value]="vm.filter"
+          (ionChange)="setFilter($any($event).detail.value)"
+        >
+          <ion-segment-button value="all">
+            <div class="filter-segment__inner">
+              <span
+                class="filter-segment__dot"
+                aria-hidden="true"
+                [style.background]="filterAllDotColor"
+              ></span>
+              <ion-label>Todas</ion-label>
+            </div>
+          </ion-segment-button>
+          <ion-segment-button value="uncategorized">
+            <div class="filter-segment__inner">
+              <span
+                class="filter-segment__dot"
+                aria-hidden="true"
+                [style.background]="filterUncategorizedDotColor"
+              ></span>
+              <ion-label class="filter-segment__cat">Sin categoría</ion-label>
+            </div>
+          </ion-segment-button>
+          @for (c of vm.categories; track c.id) {
+            <ion-segment-button [value]="c.id">
+              <div class="filter-segment__inner">
+                <span
+                  class="filter-segment__dot"
+                  aria-hidden="true"
+                  [style.background]="c.color"
+                ></span>
+                <ion-label class="filter-segment__cat">{{ c.name }}</ion-label>
+              </div>
+            </ion-segment-button>
+          }
+        </ion-segment>
+      }
+
+      @if (vm.tasks.length === 0) {
+        <section class="empty-state" aria-live="polite">
+          <div class="empty-state__icon" aria-hidden="true">
+            <ion-icon name="checkbox-outline"></ion-icon>
+          </div>
+          @if (vm.filter !== 'all') {
+            <h2 class="empty-state__title">Nada en este filtro</h2>
+            <p class="empty-state__hint">
+              Prueba otro filtro o pulsa el botón + abajo a la derecha para crear una tarea. Los datos
+              se guardan en este dispositivo.
+            </p>
+          } @else {
+            <h2 class="empty-state__title">Sin tareas por ahora</h2>
+            <p class="empty-state__hint">
+              Pulsa el botón flotante + abajo a la derecha para crear tu primera tarea.
+            </p>
+          }
+        </section>
+      } @else {
+        <section
+          class="tasks-meta-wrap"
+          role="status"
+          [attr.aria-label]="tasksMetaAria(vm.tasks)"
+        >
+          <ion-grid class="tasks-meta-grid ion-no-padding" fixed="true">
+            <ion-row>
+              <ion-col size="6" class="ion-no-padding">
+                <article class="tasks-meta-tile tasks-meta-tile--pending">
+                  <div class="tasks-meta-tile__icon-wrap" aria-hidden="true">
+                    <ion-icon name="time-outline"></ion-icon>
+                  </div>
+                  <div class="tasks-meta-tile__text">
+                    <span class="tasks-meta-tile__value">{{ countPending(vm.tasks) }}</span>
+                    <span class="tasks-meta-tile__label">Pendientes</span>
+                  </div>
+                </article>
+              </ion-col>
+              <ion-col size="6" class="ion-no-padding">
+                <article class="tasks-meta-tile tasks-meta-tile--done">
+                  <div class="tasks-meta-tile__icon-wrap" aria-hidden="true">
+                    <ion-icon name="checkmark-circle-outline"></ion-icon>
+                  </div>
+                  <div class="tasks-meta-tile__text">
+                    <span class="tasks-meta-tile__value">{{ countCompleted(vm.tasks) }}</span>
+                    <span class="tasks-meta-tile__label">Completadas</span>
+                  </div>
+                </article>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </section>
+        <ion-list class="task-list" lines="full" inset="true">
+          @for (task of vm.tasks; track task.id) {
+            <ion-item
+              class="task-item"
+              [class.task-item--done]="task.completed"
+              lines="none"
+            >
+              <ion-checkbox
+                slot="start"
+                [checked]="task.completed"
+                (ionChange)="onToggleCompleted(task, $event)"
+                [attr.aria-label]="
+                  task.completed ? 'Marcar como pendiente' : 'Marcar como completada'
+                "
+              ></ion-checkbox>
+              <ion-label class="task-item__title">
+                <h2 class="task-item__heading">{{ task.title }}</h2>
+                <p class="task-item__cat">
+                  <span
+                    class="task-item__cat-dot"
+                    aria-hidden="true"
+                    [style.background]="taskCategoryDotColor(task, vm.categories)"
+                  ></span>
+                  <span class="task-item__cat-text">{{
+                    categoryNameForTask(task, vm.categories)
+                  }}</span>
+                </p>
+              </ion-label>
+              <ion-button
+                slot="end"
+                fill="clear"
+                class="task-item__menu-btn"
+                [attr.id]="'task-menu-trigger-' + task.id"
+                aria-haspopup="true"
+                aria-label="Más opciones de la tarea"
+              >
+                <ion-icon slot="icon-only" name="ellipsis-vertical" aria-hidden="true"></ion-icon>
+              </ion-button>
+              <ion-popover
+                [trigger]="'task-menu-trigger-' + task.id"
+                [dismissOnSelect]="true"
+                side="bottom"
+                alignment="end"
+              >
+                <ng-template>
+                  <ion-content class="task-menu-popover">
+                    <ion-list lines="full">
+                      <ion-item button="true" detail="false" (click)="beginEditTask(task)">
+                        <ion-icon name="create-outline" slot="start" aria-hidden="true"></ion-icon>
+                        <ion-label>Editar tarea</ion-label>
+                      </ion-item>
+                      <ion-item
+                        button="true"
+                        detail="false"
+                        lines="none"
+                        (click)="confirmDelete(task)"
+                        class="task-menu-popover__danger"
+                      >
+                        <ion-icon
+                          name="trash-outline"
+                          slot="start"
+                          color="danger"
+                          aria-hidden="true"
+                        ></ion-icon>
+                        <ion-label color="danger">Eliminar tarea</ion-label>
+                      </ion-item>
+                    </ion-list>
+                  </ion-content>
+                </ng-template>
+              </ion-popover>
+            </ion-item>
+          }
+        </ion-list>
+      }
+    </div>
+
+    <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+      <ion-fab-button (click)="openAddTaskModal()" aria-label="Nueva tarea">
+        <ion-icon name="add" aria-hidden="true"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
+  </ion-content>
+
+  <ion-modal
+    class="task-form-modal-host"
+    [isOpen]="taskFormModalOpen"
+    (didDismiss)="onTaskFormModalDismissed()"
+  >
+    <ng-template>
+      <ion-header class="ion-no-border">
+        <ion-toolbar class="task-form-modal__toolbar">
+          <ion-title class="task-form-modal__title">{{ taskFormModalTitle }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button
+              fill="clear"
+              class="task-form-modal__close"
+              (click)="closeTaskFormModal()"
+              aria-label="Cerrar"
+            >
+              <ion-icon slot="icon-only" name="close-circle" aria-hidden="true"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="task-form-modal">
+        <div class="task-form-modal__body">
+          @if (vm.categories.length > 0) {
+            <div class="task-form-modal__group">
+              <div class="task-form-modal__label-row">
+                <span class="task-form-modal__field-label">Categoría</span>
+                <span
+                  class="task-form-modal__cat-dot"
+                  aria-hidden="true"
+                  [style.background]="draftCategoryDotColor(vm.categories)"
+                ></span>
+              </div>
+              <ion-item lines="none" class="task-form-modal__control">
+                <ion-select
+                  [(ngModel)]="draftCategoryId"
+                  interface="popover"
+                  placeholder="Sin categoría"
+                  [interfaceOptions]="{ header: 'Categoría' }"
+                  (ionChange)="onTaskFormCategoryChange()"
+                  [attr.aria-label]="
+                    editingTaskId ? 'Categoría de la tarea' : 'Categoría de la nueva tarea'
+                  "
+                >
+                  <ion-select-option value="">Sin categoría</ion-select-option>
+                  @for (c of vm.categories; track c.id) {
+                    <ion-select-option [value]="c.id">{{ c.name }}</ion-select-option>
+                  }
+                </ion-select>
+              </ion-item>
+            </div>
+          }
+          <div class="task-form-modal__group">
+            <div class="task-form-modal__label-row">
+              <span class="task-form-modal__field-label">Título</span>
+            </div>
+            <ion-item lines="none" class="task-form-modal__control task-form-modal__control--textarea">
+              <ion-textarea
+                [(ngModel)]="draftTitle"
+                [autoGrow]="true"
+                [rows]="1"
+                [placeholder]="
+                  editingTaskId ? 'Título de la tarea…' : '¿Qué tienes que hacer?'
+                "
+                inputmode="text"
+                enterkeyhint="enter"
+                [attr.aria-label]="
+                  editingTaskId ? 'Título de la tarea (edición)' : 'Texto de la nueva tarea'
+                "
+              ></ion-textarea>
+            </ion-item>
+          </div>
+          <ion-button
+            expand="block"
+            class="task-form-modal__submit"
+            (click)="submitTaskForm()"
+            [disabled]="!draftTitle.trim()"
+          >
+            {{ taskFormSubmitLabel }}
+          </ion-button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+}

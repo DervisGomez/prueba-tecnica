@@ -1,2 +1,51 @@
-// For information on how to create your own theme, please refer to:
-// https://ionicframework.com/docs/theming/
+// Referencia: https://ionicframework.com/docs/theming/
+
+:root {
+  /** Primario: azul pizarra sobrio */
+  --ion-color-primary: #2563eb;
+  --ion-color-primary-rgb: 37, 99, 235;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #2157cf;
+  --ion-color-primary-tint: #3b73ed;
+
+  --ion-color-secondary: #64748b;
+  --ion-color-secondary-rgb: 100, 116, 139;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #58677a;
+  --ion-color-secondary-tint: #748196;
+
+  --ion-color-tertiary: #0d9488;
+  --ion-color-tertiary-rgb: 13, 148, 136;
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+  --ion-color-tertiary-shade: #0b8277;
+  --ion-color-tertiary-tint: #259f94;
+
+  --ion-color-success: #16a34a;
+  --ion-color-warning: #ea580c;
+  --ion-color-danger: #dc2626;
+
+  --ion-background-color: #f8fafc;
+  --ion-background-color-rgb: 248, 250, 252;
+  --ion-text-color: #0f172a;
+  --ion-text-color-rgb: 15, 23, 42;
+
+  --ion-toolbar-background: #ffffff;
+  --ion-item-background: #ffffff;
+
+  --ion-card-background: #ffffff;
+}
+
+.ion-palette-dark,
+.ion-palette-dark.ios,
+.ion-palette-dark.md {
+  --ion-background-color: #0f172a;
+  --ion-background-color-rgb: 15, 23, 42;
+  --ion-text-color: #f1f5f9;
+  --ion-text-color-rgb: 241, 245, 249;
+  --ion-toolbar-background: #1e293b;
+  --ion-item-background: #1e293b;
+  --ion-card-background: #1e293b;
+}

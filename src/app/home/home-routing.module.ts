@@ -6,7 +6,14 @@ const routes: Routes = [
   {
     path: '',
     component: HomePage,
-  }
+  },
+  {
+    path: 'categorias',
+    loadChildren: () =>
+      import('./categories/categories.module').then(
+        (m) => m.CategoriesPageModule
+      ),
+  },
 ];
 
 @NgModule({
