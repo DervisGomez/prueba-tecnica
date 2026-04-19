@@ -1,6 +1,6 @@
 # Respuestas breves (entrega de prueba tecnica)
 
-Documento corto con las tres reflexiones pedidas en el enunciado. El detalle de medicion de rendimiento sigue en [`respuestas-entrega.md`](respuestas-entrega.md).
+Documento corto con las tres reflexiones pedidas en el enunciado. El detalle de medicion de rendimiento sigue en [`informe-rendimiento.md`](informe-rendimiento.md).
 
 ---
 
@@ -28,7 +28,7 @@ Se aplicaron cambios centrados en **menos trabajo por ciclo de deteccion de camb
 
 - **Un unico `sort`** al ordenar tareas al persistir o reordenar, en lugar de encadenar filtros y ordenaciones redundantes.
 
-El **por que** de cada punto esta alineado con los tres ejes del enunciado: carga inicial mas controlada, interaccion mas estable con muchas tareas y menor presion sobre heap y listeners. Las mediciones concretas (LCP, INP, heap snapshots en escenarios S1/S2/S3) estan documentadas en `respuestas-entrega.md`.
+El **por que** de cada punto esta alineado con los tres ejes del enunciado: carga inicial mas controlada, interaccion mas estable con muchas tareas y menor presion sobre heap y listeners. Las mediciones concretas (LCP, INP, heap snapshots en escenarios S1/S2/S3) estan documentadas en `informe-rendimiento.md`.
 
 ---
 

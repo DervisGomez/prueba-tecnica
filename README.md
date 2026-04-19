@@ -26,10 +26,10 @@ Segun las instrucciones de la prueba, conviene trabajar en una **rama** dedicada
 | App base To-Do (agregar, completar, eliminar; edicion) | **Listo** |
 | Categorias (CRUD, asignar a tarea, filtrar) | **Listo** |
 | Firebase + Remote Config (feature flag) | **Listo en codigo** — proyecto en `environment*.ts`; en consola Firebase debe existir el parametro booleano `enable_categories` |
-| Optimizacion de rendimiento (carga, muchas tareas, memoria) | **Listo** — mejoras en app + informe con metricas en `docs/respuestas-entrega.md` |
+| Optimizacion de rendimiento (carga, muchas tareas, memoria) | **Listo** — mejoras en app + informe con metricas en `docs/informe-rendimiento.md` |
 | APK / IPA y enlaces de descarga | **Pendiente de entrega** — generar builds y publicar enlaces (Drive, Releases, etc.) |
 | Evidencia visual (capturas o video de funcionalidades y del flag) | **Pendiente** — recomendado adjuntar o enlazar fuera del repo |
-| Respuestas escritas: desafios, optimizacion, calidad/mantenibilidad | **Listo** — reflexion corta en [`docs/reflexion-entrega.md`](docs/reflexion-entrega.md); metricas de rendimiento en [`docs/respuestas-entrega.md`](docs/respuestas-entrega.md) |
+| Respuestas escritas: desafios, optimizacion, calidad/mantenibilidad | **Listo** — reflexion corta en [`docs/reflexion-entrega.md`](docs/reflexion-entrega.md); metricas de rendimiento en [`docs/informe-rendimiento.md`](docs/informe-rendimiento.md) |
 
 ## Alcance implementado (detalle)
 
@@ -153,7 +153,7 @@ Archivos nativos opcionales para builds Cordova: `google-services.json` (Android
 
 ## Optimizacion de rendimiento
 
-**Estado:** mejoras aplicadas en codigo e **informe de medicion** en [`docs/respuestas-entrega.md`](docs/respuestas-entrega.md) (LCP, INP, CLS, heap snapshots, escenarios S1/S2/S3). Lista de capturas referenciada en `docs/evidence/FILES.txt` (subir los PNG al repo o enlazarlos si se entregan fuera).
+**Estado:** mejoras aplicadas en codigo e **informe de medicion** en [`docs/informe-rendimiento.md`](docs/informe-rendimiento.md) (LCP, INP, CLS, heap snapshots, escenarios S1/S2/S3). Lista de capturas referenciada en `docs/evidence/FILES.txt` (subir los PNG al repo o enlazarlos si se entregan fuera).
 
 ### Mejoras aplicadas
 
@@ -286,7 +286,7 @@ Recomendado agregar pruebas para:
 | Codigo + README | **Si** — este archivo y codigo en `src/` |
 | Evidencia visual (capturas o video) | **Pendiente** — anadir enlaces o carpeta `docs/evidence/` con assets |
 | APK e IPA + enlaces de descarga | **Pendiente** — no se versionan binarios; documentar URLs al subirlos |
-| Respuestas: desafios, optimizacion, calidad | **Listo** — [`docs/reflexion-entrega.md`](docs/reflexion-entrega.md); detalle de medicion en [`docs/respuestas-entrega.md`](docs/respuestas-entrega.md) |
+| Respuestas: desafios, optimizacion, calidad | **Listo** — [`docs/reflexion-entrega.md`](docs/reflexion-entrega.md); detalle de medicion en [`docs/informe-rendimiento.md`](docs/informe-rendimiento.md) |
 
 ## Checklist final de entrega
 
@@ -294,7 +294,7 @@ Recomendado agregar pruebas para:
 - [x] README con instalacion, Cordova Android/iOS, Firebase/Remote Config, rendimiento y mapa de estado de la prueba
 - [x] Firebase y Remote Config integrados en aplicacion (verificar param `enable_categories` en consola y publicar cambios)
 - [x] Feature flag `enable_categories` implementada en codigo (evidencia visual o video: pendiente si se exige explicitamente)
-- [x] Rendimiento optimizado en codigo y justificado con informe — [`docs/respuestas-entrega.md`](docs/respuestas-entrega.md)
+- [x] Rendimiento optimizado en codigo y justificado con informe — [`docs/informe-rendimiento.md`](docs/informe-rendimiento.md)
 - [ ] APK generado y **enlace de descarga** publicado
 - [ ] IPA generado y **enlace de descarga** publicado (o nota de imposibilidad sin macOS / uso de CI)
 - [ ] Capturas o video de **funcionalidades de producto** (tareas, categorias, filtro, flag si aplica)

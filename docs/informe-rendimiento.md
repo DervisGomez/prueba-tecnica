@@ -48,7 +48,7 @@ Estas mejoras ayudan, pero **no eliminan por completo** el costo de tener miles 
 2. Mantener la pestaña **en foco**.
 3. `Performance` → **Live metrics** (LCP/CLS/INP tras uso real).
 4. `Record and reload` (carga inicial; LCP en Insights).
-5. `Record` (30–60s; interacción: scroll + filtros + toggles).
+5. `Record` (30–40s; interacción: scroll + filtros + toggles).
 
 **Memoria (Heap snapshot)**
 

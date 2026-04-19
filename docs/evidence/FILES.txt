@@ -1,4 +1,4 @@
-Capturas estandar (PNG) referenciadas en docs/respuestas-entrega.md:
+Capturas estandar (PNG) referenciadas en docs/informe-rendimiento.md:
 
 Performance:
 - s1-live-metrics.png
