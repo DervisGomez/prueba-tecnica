@@ -17,6 +17,13 @@ cd prueba-tecnica
 
 Segun las instrucciones de la prueba, conviene trabajar en una **rama** dedicada y entregar el enlace al remoto con el historial de **commits** claro (mensajes descriptivos, cambios acotados por commit).
 
+## Descarga APK (Android)
+
+- **Pagina del release:** [Prueba Tecnica - APK (tag `V1.0.0`)](https://github.com/DervisGomez/prueba-tecnica/releases/tag/V1.0.0) — en **Assets** esta el fichero `app-release.apk`.
+- **Descarga directa:** [app-release.apk](https://github.com/DervisGomez/prueba-tecnica/releases/download/V1.0.0/app-release.apk)
+
+Build **release** firmada; instalar en dispositivo Android permitiendo fuentes desconocidas si el sistema lo pide.
+
 ## Estado frente al enunciado (resumen)
 
 | Requisito de la prueba | Estado |
@@ -27,7 +34,7 @@ Segun las instrucciones de la prueba, conviene trabajar en una **rama** dedicada
 | Categorias (CRUD, asignar a tarea, filtrar) | **Listo** |
 | Firebase + Remote Config (feature flag) | **Listo en codigo** — proyecto en `environment*.ts`; en consola Firebase debe existir el parametro booleano `enable_categories` |
 | Optimizacion de rendimiento (carga, muchas tareas, memoria) | **Listo** — mejoras en app + informe con metricas en `docs/informe-rendimiento.md` |
-| APK / IPA y enlaces de descarga | **Pendiente de entrega** — generar builds y publicar enlaces (Drive, Releases, etc.) |
+| APK / IPA y enlaces de descarga | **APK listo** — [release V1.0.0](https://github.com/DervisGomez/prueba-tecnica/releases/tag/V1.0.0); **IPA** pendiente o CI / Mac (ver notas al final del README) |
 | Evidencia visual (capturas o video de funcionalidades y del flag) | **Pendiente** — recomendado adjuntar o enlazar fuera del repo |
 | Respuestas escritas: desafios, optimizacion, calidad/mantenibilidad | **Listo** — reflexion corta en [`docs/reflexion-entrega.md`](docs/reflexion-entrega.md); metricas de rendimiento en [`docs/informe-rendimiento.md`](docs/informe-rendimiento.md) |
 
@@ -285,7 +292,7 @@ Recomendado agregar pruebas para:
 | --- | --- |
 | Codigo + README | **Si** — este archivo y codigo en `src/` |
 | Evidencia visual (capturas o video) | **Pendiente** — anadir enlaces o carpeta `docs/evidence/` con assets |
-| APK e IPA + enlaces de descarga | **Pendiente** — no se versionan binarios; documentar URLs al subirlos |
+| APK e IPA + enlaces de descarga | **APK** — [release V1.0.0](https://github.com/DervisGomez/prueba-tecnica/releases/tag/V1.0.0) / [descarga directa](https://github.com/DervisGomez/prueba-tecnica/releases/download/V1.0.0/app-release.apk); **IPA** pendiente |
 | Respuestas: desafios, optimizacion, calidad | **Listo** — [`docs/reflexion-entrega.md`](docs/reflexion-entrega.md); detalle de medicion en [`docs/informe-rendimiento.md`](docs/informe-rendimiento.md) |
 
 ## Checklist final de entrega
@@ -295,7 +302,7 @@ Recomendado agregar pruebas para:
 - [x] Firebase y Remote Config integrados en aplicacion (verificar param `enable_categories` en consola y publicar cambios)
 - [x] Feature flag `enable_categories` implementada en codigo (evidencia visual o video: pendiente si se exige explicitamente)
 - [x] Rendimiento optimizado en codigo y justificado con informe — [`docs/informe-rendimiento.md`](docs/informe-rendimiento.md)
-- [ ] APK generado y **enlace de descarga** publicado
+- [x] APK generado y **enlace de descarga** publicado — [release V1.0.0](https://github.com/DervisGomez/prueba-tecnica/releases/tag/V1.0.0)
 - [ ] IPA generado y **enlace de descarga** publicado (o nota de imposibilidad sin macOS / uso de CI)
 - [ ] Capturas o video de **funcionalidades de producto** (tareas, categorias, filtro, flag si aplica)
 - [x] Texto de entrega: **desafios**, **optimizacion** y **calidad/mantenibilidad** — [`docs/reflexion-entrega.md`](docs/reflexion-entrega.md)
