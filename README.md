@@ -2,6 +2,18 @@
 
 Aplicacion To-Do desarrollada con Ionic y Angular, con soporte hibrido para Android/iOS via Cordova.
 
+## Repositorio (versionamiento)
+
+- **GitHub (repositorio publico):** [github.com/DervisGomez/prueba-tecnica](https://github.com/DervisGomez/prueba-tecnica)
+- **Clonar el codigo:**
+
+```bash
+git clone https://github.com/DervisGomez/prueba-tecnica.git
+cd prueba-tecnica
+```
+
+Segun las instrucciones de la prueba, conviene trabajar en una **rama** dedicada y entregar el enlace al remoto con el historial de **commits** claro (mensajes descriptivos, cambios acotados por commit).
+
 ## Alcance implementado
 
 - CRUD de tareas: crear, editar, completar y eliminar.
@@ -285,7 +297,7 @@ Informe detallado de rendimiento (para evaluadores):
 
 ## Checklist final de entrega
 
-- [ ] Repositorio publico actualizado con commits claros.
+- [x] Repositorio publico actualizado con commits claros. Remoto: `https://github.com/DervisGomez/prueba-tecnica.git`
 - [ ] README completo y validado por otra persona.
 - [ ] Firebase y Remote Config funcionando.
 - [ ] Feature flag demostrada con evidencia.
