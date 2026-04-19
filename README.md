@@ -24,6 +24,26 @@ Segun las instrucciones de la prueba, conviene trabajar en una **rama** dedicada
 
 Build **release** firmada; instalar en dispositivo Android permitiendo fuentes desconocidas si el sistema lo pide.
 
+## iOS, IPA y Codemagic (CI sin Mac)
+
+### Situacion de la entrega
+
+- **Sin Mac local:** la compilacion iOS se plantea en **Codemagic** (runner macOS en la nube), alineado con el enunciado de la prueba.
+- **Sin Apple Developer Program (cuenta de pago):** Apple exige suscripcion activa para **certificados de distribucion**, **perfiles de aprovisionamiento** y uso estable de **App Store Connect API** con los que Codemagic firma y exporta un **IPA** instalable fuera de un entorno de desarrollo muy limitado. **Por eso no hay enlace publico a un `.ipa`** en esta entrega: no es un vacio de conocimiento sobre CI, sino un **requisito externo** que no estaba disponible en el momento de la entrega.
+- **Lo que si queda en el repositorio:** el workflow declarado en [`codemagic.yaml`](codemagic.yaml) (workflow `ios-ipa`: dependencias npm, `ionic cordova` iOS, CocoaPods, `xcode-project use-profiles`, generacion del IPA como artefacto). Documentacion oficial seguida: [Ionic Cordova en Codemagic](https://docs.codemagic.io/yaml-quick-start/building-a-cordova-app/).
+
+### Que debe completar quien disponga de cuenta Apple (evaluador u otro entorno)
+
+1. **Apple Developer Program** activo y App ID con bundle **`io.pruebatecnica.co`** (coincide con `config.xml`).
+2. En **App Store Connect**, crear una **API key** (.p8) con permisos adecuados (p. ej. rol tipo App Manager).
+3. En **Codemagic** → Team settings → **Integrations** → App Store Connect: registrar la clave con el **mismo nombre** que en `codemagic.yaml` → `integrations.app_store_connect` (actualmente **`prueba-tecnica-asc`**). Si se usa otro nombre, hay que cambiar esa cadena en el YAML y hacer push.
+4. En **Code signing identities** de Codemagic: certificado de distribucion y **provisioning profile** tipo **App Store** para ese bundle (o ajustar `distribution_type` en el YAML si se usa Ad Hoc con UDIDs).
+5. Lanzar el workflow **`ios-ipa`** en la rama que contenga este `codemagic.yaml`; al terminar, descargar el **IPA** desde **Artifacts** y publicar el enlace (p. ej. en un GitHub Release junto al APK).
+
+### Ajustes frecuentes si el primer build falla
+
+- **`XCODE_WORKSPACE` / `XCODE_SCHEME`:** deben coincidir con el proyecto generado en `platforms/ios/` (derivado del `<name>` en `config.xml`, hoy **"Prueba Tecnica"**). Si Xcode en CI reporta otro scheme, actualizar las variables en `codemagic.yaml`.
+
 ## Estado frente al enunciado (resumen)
 
 | Requisito de la prueba | Estado |
@@ -34,7 +54,7 @@ Build **release** firmada; instalar en dispositivo Android permitiendo fuentes d
 | Categorias (CRUD, asignar a tarea, filtrar) | **Listo** |
 | Firebase + Remote Config (feature flag) | **Listo en codigo** — proyecto en `environment*.ts`; en consola Firebase debe existir el parametro booleano `enable_categories` |
 | Optimizacion de rendimiento (carga, muchas tareas, memoria) | **Listo** — mejoras en app + informe con metricas en `docs/informe-rendimiento.md` |
-| APK / IPA y enlaces de descarga | **APK listo** — [release V1.0.0](https://github.com/DervisGomez/prueba-tecnica/releases/tag/V1.0.0); **IPA** pendiente o CI / Mac (ver notas al final del README) |
+| APK / IPA y enlaces de descarga | **APK listo** — [release V1.0.0](https://github.com/DervisGomez/prueba-tecnica/releases/tag/V1.0.0). **IPA:** sin binario publico por falta de **Apple Developer Program**; pipeline **Codemagic** documentado arriba y en [`codemagic.yaml`](codemagic.yaml) |
 | Evidencia visual (capturas o video de funcionalidades y del flag) | **Pendiente** — recomendado adjuntar o enlazar fuera del repo |
 | Respuestas escritas: desafios, optimizacion, calidad/mantenibilidad | **Listo** — reflexion corta en [`docs/reflexion-entrega.md`](docs/reflexion-entrega.md); metricas de rendimiento en [`docs/informe-rendimiento.md`](docs/informe-rendimiento.md) |
 
@@ -46,6 +66,7 @@ Build **release** firmada; instalar en dispositivo Android permitiendo fuentes d
 - **Firebase Remote Config:** servicio `src/app/core/services/feature-flags.service.ts`; flag `enable_categories` condiciona rutas, filtros, selector en formulario y gestion de categorias.
 - **Rendimiento:** `ChangeDetectionStrategy.OnPush`, lista con `ion-infinite-scroll`, proyeccion de estado en una pasada, mapa `id -> categoria`, orden unico con `sort` (ver seccion mas abajo).
 - **Datos de prueba / laboratorio:** en desarrollo, funciones globales `seedPerfScenario` / `clearPerfScenario` en consola del navegador (documentadas en este README).
+- **CI iOS (Codemagic):** [`codemagic.yaml`](codemagic.yaml) con workflow `ios-ipa` para generar IPA en la nube; requiere Apple Developer Program y credenciales en Codemagic (detalle en [iOS, IPA y Codemagic](#ios-ipa-y-codemagic-ci-sin-mac)).
 
 ## Stack tecnico
 
@@ -292,7 +313,7 @@ Recomendado agregar pruebas para:
 | --- | --- |
 | Codigo + README | **Si** — este archivo y codigo en `src/` |
 | Evidencia visual (capturas o video) | **Pendiente** — anadir enlaces o carpeta `docs/evidence/` con assets |
-| APK e IPA + enlaces de descarga | **APK** — [release V1.0.0](https://github.com/DervisGomez/prueba-tecnica/releases/tag/V1.0.0) / [descarga directa](https://github.com/DervisGomez/prueba-tecnica/releases/download/V1.0.0/app-release.apk); **IPA** pendiente |
+| APK e IPA + enlaces de descarga | **APK** — [release V1.0.0](https://github.com/DervisGomez/prueba-tecnica/releases/tag/V1.0.0) / [descarga directa](https://github.com/DervisGomez/prueba-tecnica/releases/download/V1.0.0/app-release.apk). **IPA** — ver [iOS, IPA y Codemagic](#ios-ipa-y-codemagic-ci-sin-mac): workflow listo; enlace al `.ipa` condicionado a credenciales Apple en Codemagic |
 | Respuestas: desafios, optimizacion, calidad | **Listo** — [`docs/reflexion-entrega.md`](docs/reflexion-entrega.md); detalle de medicion en [`docs/informe-rendimiento.md`](docs/informe-rendimiento.md) |
 
 ## Checklist final de entrega
@@ -303,14 +324,10 @@ Recomendado agregar pruebas para:
 - [x] Feature flag `enable_categories` implementada en codigo (evidencia visual o video: pendiente si se exige explicitamente)
 - [x] Rendimiento optimizado en codigo y justificado con informe — [`docs/informe-rendimiento.md`](docs/informe-rendimiento.md)
 - [x] APK generado y **enlace de descarga** publicado — [release V1.0.0](https://github.com/DervisGomez/prueba-tecnica/releases/tag/V1.0.0)
-- [ ] IPA generado y **enlace de descarga** publicado (o nota de imposibilidad sin macOS / uso de CI)
+- [x] IPA / iOS: **Codemagic** configurado en [`codemagic.yaml`](codemagic.yaml) y limitacion **sin Apple Developer Program** documentada en README y [`docs/reflexion-entrega.md`](docs/reflexion-entrega.md). **Enlace publico a `.ipa`:** pendiente hasta aportar cuenta Apple + firma en Codemagic (pasos en seccion *iOS, IPA y Codemagic*)
 - [ ] Capturas o video de **funcionalidades de producto** (tareas, categorias, filtro, flag si aplica)
 - [x] Texto de entrega: **desafios**, **optimizacion** y **calidad/mantenibilidad** — [`docs/reflexion-entrega.md`](docs/reflexion-entrega.md)
 
 ## Notas sobre IPA en Linux/Windows
 
-En Linux/Windows puedes desarrollar y generar Android sin problema. Para exportar `.ipa` debes:
-
-- usar una Mac fisica,
-- usar CI/servicio cloud con entorno macOS (CodeMagic, Appflow, etc.),
-- o pedir compilacion a alguien con Mac.
+En Linux/Windows puedes desarrollar y generar **Android** sin problema. Para un **IPA** necesitas macOS + Xcode **o** CI en la nube (este repo documenta **Codemagic** en la seccion [iOS, IPA y Codemagic](#ios-ipa-y-codemagic-ci-sin-mac)). Sin **Apple Developer Program** no se obtiene un IPA de distribucion listo para evaluadores externos de la forma habitual; el YAML y el README dejan el camino listo cuando exista esa cuenta.

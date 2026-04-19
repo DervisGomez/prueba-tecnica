@@ -12,6 +12,8 @@ Documento corto con las tres reflexiones pedidas en el enunciado. El detalle de 
 
 **Rendimiento con muchas tareas.** Al crecer el volumen, el cuello dejo de ser solo "cargar datos" y paso a ser interactividad (filtros, toggles, scroll) y memoria. Fue un desafio medir con criterio (DevTools, escenarios reproducibles) y decidir hasta donde compensaba optimizar en el cliente frente a asumir limites razonables de uso.
 
+**IPA iOS sin Apple Developer Program.** Ademas del factor Mac, Apple exige la suscripcion **Apple Developer Program** para certificados y perfiles de **distribucion** con los que herramientas como **Codemagic** pueden firmar y publicar un `.ipa` de forma estandar (TestFlight / dispositivos de evaluacion). En esta entrega **no hay enlace a un IPA** por esa limitacion economica/contractual, no por desconocer el flujo: el repositorio incluye [`codemagic.yaml`](../codemagic.yaml) con el workflow `ios-ipa` (npm, Cordova iOS, CocoaPods, `xcode-project use-profiles`, artefacto IPA) y el README describe los pasos que un evaluador u otra persona con cuenta Apple debe completar en Codemagic. La documentacion de referencia es la de Codemagic para [Ionic Cordova](https://docs.codemagic.io/yaml-quick-start/building-a-cordova-app/).
+
 ---
 
 ## 2. Tecnicas de optimizacion de rendimiento aplicadas y por que
