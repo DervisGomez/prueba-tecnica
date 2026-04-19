@@ -14,11 +14,12 @@ function newId(): string {
 
 /** Pendientes arriba; completadas abajo. Dentro de cada grupo, más recientes primero. */
 function orderTasksForUi(tasks: Task[]): Task[] {
-  const byCreatedDesc = (a: Task, b: Task) =>
-    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  const pending = tasks.filter((t) => !t.completed).sort(byCreatedDesc);
-  const done = tasks.filter((t) => t.completed).sort(byCreatedDesc);
-  return [...pending, ...done];
+  return [...tasks].sort((a, b) => {
+    if (a.completed !== b.completed) {
+      return a.completed ? 1 : -1;
+    }
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 }
 
 @Injectable({ providedIn: 'root' })
@@ -65,6 +66,10 @@ export class TaskService {
 
   removeTask(id: string): void {
     void this.removeTaskAsync(id);
+  }
+
+  async replaceAllForTesting(tasks: Task[]): Promise<void> {
+    await this.persist(tasks);
   }
 
   /** Quitar la categoría de todas las tareas (p. ej. al borrar la categoría). */

@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 
@@ -8,6 +8,11 @@ import { IonicStorageModule } from '@ionic/storage-angular';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
+import { FeatureFlagsService } from './core/services/feature-flags.service';
+
+function initFeatureFlags(featureFlagsService: FeatureFlagsService): () => Promise<void> {
+  return () => featureFlagsService.init();
+}
 
 @NgModule({
   declarations: [AppComponent],
@@ -21,7 +26,15 @@ import { AppRoutingModule } from './app-routing.module';
     }),
     AppRoutingModule,
   ],
-  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
+  providers: [
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initFeatureFlags,
+      deps: [FeatureFlagsService],
+      multi: true,
+    },
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

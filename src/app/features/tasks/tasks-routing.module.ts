@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { categoriesFeatureGuard } from '../../core/guards/categories-feature.guard';
 import { TaskListPage } from './task-list.page';
 
 const routes: Routes = [
@@ -9,6 +10,7 @@ const routes: Routes = [
   },
   {
     path: 'categorias',
+    canMatch: [categoriesFeatureGuard],
     loadChildren: () =>
       import('../categories/categories.module').then(
         (m) => m.CategoriesPageModule

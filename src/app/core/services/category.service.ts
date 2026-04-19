@@ -56,6 +56,10 @@ export class CategoryService {
     void this.deleteCategoryAsync(id);
   }
 
+  async replaceAllForTesting(categories: Category[]): Promise<void> {
+    await this.persist(categories);
+  }
+
   private async initApp(): Promise<void> {
     await this.storage.create();
     const list = sortCategories(await this.readStored());

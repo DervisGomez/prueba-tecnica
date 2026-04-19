@@ -1,0 +1,25 @@
+Capturas estandar (PNG) referenciadas en docs/respuestas-entrega.md:
+
+Performance:
+- s1-live-metrics.png
+- s1-performance-reload.png
+- s1-performance-interaction.png
+
+- s2-live-metrics.png
+- s2-performance-reload.png
+- s2-performance-reload-alt.png (segunda captura de reload con LCP distinto)
+- s2-performance-interaction-1.png
+- s2-performance-interaction-2.png
+- s2-performance-interaction-short.png (traza corta con INP ~511ms)
+
+- s3-performance-short.png
+- s3-performance-long.png
+
+Memoria:
+- s1-heap-snapshot.png
+- s2-heap-snapshot.png
+- s3-heap-snapshot.png
+
+Extra (no embebidas en el informe, pero utiles como contexto):
+- extra-s1-live-metrics-lcp-outlier-background-warning.png
+- extra-s1-live-metrics-inp-not-ready.png

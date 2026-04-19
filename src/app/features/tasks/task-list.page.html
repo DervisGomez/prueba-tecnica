@@ -3,9 +3,11 @@
     <ion-toolbar>
       <ion-title>Mis tareas</ion-title>
       <ion-buttons slot="end">
-        <ion-button routerLink="categorias" aria-label="Gestionar categorías">
-          <ion-icon slot="icon-only" name="pricetags-outline" aria-hidden="true"></ion-icon>
-        </ion-button>
+        @if (vm.categoriesEnabled) {
+          <ion-button routerLink="categorias" aria-label="Gestionar categorías">
+            <ion-icon slot="icon-only" name="pricetags-outline" aria-hidden="true"></ion-icon>
+          </ion-button>
+        }
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
@@ -18,7 +20,7 @@
     </ion-header>
 
     <div class="tasks-inner">
-      @if (vm.categories.length > 0) {
+      @if (vm.categoriesEnabled && vm.categories.length > 0) {
         <ion-segment
           class="filter-segment"
           scrollable="true"
@@ -60,7 +62,7 @@
         </ion-segment>
       }
 
-      @if (vm.tasks.length === 0) {
+      @if (vm.totalTasks === 0) {
         <section class="empty-state" aria-live="polite">
           <div class="empty-state__icon" aria-hidden="true">
             <ion-icon name="checkbox-outline"></ion-icon>
@@ -82,7 +84,7 @@
         <section
           class="tasks-meta-wrap"
           role="status"
-          [attr.aria-label]="tasksMetaAria(vm.tasks)"
+          [attr.aria-label]="tasksMetaAria(vm.pendingCount, vm.completedCount)"
         >
           <ion-grid class="tasks-meta-grid ion-no-padding" fixed="true">
             <ion-row>
@@ -92,7 +94,7 @@
                     <ion-icon name="time-outline"></ion-icon>
                   </div>
                   <div class="tasks-meta-tile__text">
-                    <span class="tasks-meta-tile__value">{{ countPending(vm.tasks) }}</span>
+                    <span class="tasks-meta-tile__value">{{ vm.pendingCount }}</span>
                     <span class="tasks-meta-tile__label">Pendientes</span>
                   </div>
                 </article>
@@ -103,7 +105,7 @@
                     <ion-icon name="checkmark-circle-outline"></ion-icon>
                   </div>
                   <div class="tasks-meta-tile__text">
-                    <span class="tasks-meta-tile__value">{{ countCompleted(vm.tasks) }}</span>
+                    <span class="tasks-meta-tile__value">{{ vm.completedCount }}</span>
                     <span class="tasks-meta-tile__label">Completadas</span>
                   </div>
                 </article>
@@ -112,45 +114,47 @@
           </ion-grid>
         </section>
         <ion-list class="task-list" lines="full" inset="true">
-          @for (task of vm.tasks; track task.id) {
+          @for (item of vm.visibleTasks; track item.task.id) {
             <ion-item
               class="task-item"
-              [class.task-item--done]="task.completed"
+              [class.task-item--done]="item.task.completed"
               lines="none"
             >
               <ion-checkbox
                 slot="start"
-                [checked]="task.completed"
-                (ionChange)="onToggleCompleted(task, $event)"
+                [checked]="item.task.completed"
+                (ionChange)="onToggleCompleted(item.task, $event)"
                 [attr.aria-label]="
-                  task.completed ? 'Marcar como pendiente' : 'Marcar como completada'
+                  item.task.completed
+                    ? 'Marcar como pendiente'
+                    : 'Marcar como completada'
                 "
               ></ion-checkbox>
               <ion-label class="task-item__title">
-                <h2 class="task-item__heading">{{ task.title }}</h2>
-                <p class="task-item__cat">
-                  <span
-                    class="task-item__cat-dot"
-                    aria-hidden="true"
-                    [style.background]="taskCategoryDotColor(task, vm.categories)"
-                  ></span>
-                  <span class="task-item__cat-text">{{
-                    categoryNameForTask(task, vm.categories)
-                  }}</span>
-                </p>
+                <h2 class="task-item__heading">{{ item.task.title }}</h2>
+                @if (vm.categoriesEnabled) {
+                  <p class="task-item__cat">
+                    <span
+                      class="task-item__cat-dot"
+                      aria-hidden="true"
+                      [style.background]="item.categoryDotColor"
+                    ></span>
+                    <span class="task-item__cat-text">{{ item.categoryName }}</span>
+                  </p>
+                }
               </ion-label>
               <ion-button
                 slot="end"
                 fill="clear"
                 class="task-item__menu-btn"
-                [attr.id]="'task-menu-trigger-' + task.id"
+                [attr.id]="'task-menu-trigger-' + item.task.id"
                 aria-haspopup="true"
                 aria-label="Más opciones de la tarea"
               >
                 <ion-icon slot="icon-only" name="ellipsis-vertical" aria-hidden="true"></ion-icon>
               </ion-button>
               <ion-popover
-                [trigger]="'task-menu-trigger-' + task.id"
+                [trigger]="'task-menu-trigger-' + item.task.id"
                 [dismissOnSelect]="true"
                 side="bottom"
                 alignment="end"
@@ -158,7 +162,7 @@
                 <ng-template>
                   <ion-content class="task-menu-popover">
                     <ion-list lines="full">
-                      <ion-item button="true" detail="false" (click)="beginEditTask(task)">
+                      <ion-item button="true" detail="false" (click)="beginEditTask(item.task)">
                         <ion-icon name="create-outline" slot="start" aria-hidden="true"></ion-icon>
                         <ion-label>Editar tarea</ion-label>
                       </ion-item>
@@ -166,7 +170,7 @@
                         button="true"
                         detail="false"
                         lines="none"
-                        (click)="confirmDelete(task)"
+                        (click)="confirmDelete(item.task)"
                         class="task-menu-popover__danger"
                       >
                         <ion-icon
@@ -184,6 +188,14 @@
             </ion-item>
           }
         </ion-list>
+        @if (vm.hasMoreTasks) {
+          <ion-infinite-scroll (ionInfinite)="loadMoreTasks($event)">
+            <ion-infinite-scroll-content
+              loadingSpinner="bubbles"
+              loadingText="Cargando más tareas..."
+            ></ion-infinite-scroll-content>
+          </ion-infinite-scroll>
+        }
       }
     </div>
 
@@ -217,14 +229,14 @@
       </ion-header>
       <ion-content class="task-form-modal">
         <div class="task-form-modal__body">
-          @if (vm.categories.length > 0) {
+          @if (vm.categoriesEnabled && vm.categories.length > 0) {
             <div class="task-form-modal__group">
               <div class="task-form-modal__label-row">
                 <span class="task-form-modal__field-label">Categoría</span>
                 <span
                   class="task-form-modal__cat-dot"
                   aria-hidden="true"
-                  [style.background]="draftCategoryDotColor(vm.categories)"
+                  [style.background]="draftCategoryDotColor(vm.categoriesById)"
                 ></span>
               </div>
               <ion-item lines="none" class="task-form-modal__control">

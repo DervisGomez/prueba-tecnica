@@ -3,7 +3,7 @@ import {
   ChangeDetectorRef,
   Component,
 } from '@angular/core';
-import { AlertController } from '@ionic/angular';
+import { AlertController, InfiniteScrollCustomEvent } from '@ionic/angular';
 import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
 import {
   FILTER_SEGMENT_ALL_COLOR,
@@ -12,12 +12,25 @@ import {
 import { Category } from '../../core/models/category.model';
 import { Task } from '../../core/models/task.model';
 import { CategoryService } from '../../core/services/category.service';
+import { FeatureFlagsService } from '../../core/services/feature-flags.service';
 import { TaskService } from '../../core/services/task.service';
 
 export interface TaskListViewModel {
-  tasks: Task[];
+  visibleTasks: TaskListItemViewModel[];
+  totalTasks: number;
+  pendingCount: number;
+  completedCount: number;
+  hasMoreTasks: boolean;
   categories: Category[];
+  categoriesById: Record<string, Category>;
   filter: string;
+  categoriesEnabled: boolean;
+}
+
+export interface TaskListItemViewModel {
+  task: Task;
+  categoryName: string;
+  categoryDotColor: string;
 }
 
 @Component({
@@ -42,11 +55,14 @@ export class TaskListPage {
   /** Modal único: crear o editar tarea (mismo formulario). */
   taskFormModalOpen = false;
 
+  private readonly pageSize = 50;
   private readonly filter$ = new BehaviorSubject<string>('all');
+  private readonly renderLimit$ = new BehaviorSubject<number>(this.pageSize);
 
   constructor(
     private readonly taskService: TaskService,
     private readonly categoryService: CategoryService,
+    private readonly featureFlagsService: FeatureFlagsService,
     private readonly alertController: AlertController,
     private readonly cdr: ChangeDetectorRef
   ) {
@@ -54,9 +70,13 @@ export class TaskListPage {
       this.taskService.watchTasks(),
       this.categoryService.watchCategories(),
       this.filter$,
+      this.featureFlagsService.watchCategoriesEnabled(),
+      this.renderLimit$,
     ]).pipe(
-      map(([tasks, categories, filter]) => {
-        const effective = resolveFilter(filter, categories);
+      map(([tasks, categories, filter, categoriesEnabled, renderLimit]) => {
+        const effective = categoriesEnabled
+          ? resolveFilter(filter, categories)
+          : 'all';
         if (effective !== filter) {
           queueMicrotask(() => {
             if (this.filter$.value === filter) {
@@ -64,10 +84,24 @@ export class TaskListPage {
             }
           });
         }
+        const categoriesById = toCategoryDictionary(categories);
+        const projection = projectVisibleTasks(
+          tasks,
+          categoriesEnabled,
+          categoriesById,
+          effective,
+          renderLimit
+        );
         return {
-          tasks: filterTasks(tasks, effective),
-          categories,
+          visibleTasks: projection.visibleTasks,
+          totalTasks: projection.totalTasks,
+          pendingCount: projection.pendingCount,
+          completedCount: projection.completedCount,
+          hasMoreTasks: projection.hasMoreTasks,
+          categories: categoriesEnabled ? categories : [],
+          categoriesById: categoriesEnabled ? categoriesById : {},
           filter: effective,
+          categoriesEnabled,
         };
       })
     );
@@ -75,47 +109,25 @@ export class TaskListPage {
 
   setFilter(value: string): void {
     this.filter$.next(value ?? 'all');
-  }
-
-  categoryNameForTask(task: Task, categories: Category[]): string {
-    if (!task.categoryId) {
-      return 'Sin categoría';
-    }
-    return categories.find((c) => c.id === task.categoryId)?.name ?? 'Categoría';
-  }
-
-  /** Color del punto junto al nombre de categoría (incluye «Sin categoría» del segmento). */
-  taskCategoryDotColor(task: Task, categories: Category[]): string {
-    if (!task.categoryId) {
-      return this.filterUncategorizedDotColor;
-    }
-    const cat = categories.find((c) => c.id === task.categoryId);
-    return cat?.color ?? this.filterUncategorizedDotColor;
+    this.renderLimit$.next(this.pageSize);
   }
 
   /** Color del indicador según la categoría elegida en el modal (borrador). */
-  draftCategoryDotColor(categories: Category[]): string {
+  draftCategoryDotColor(categoriesById: Record<string, Category>): string {
     const id = this.draftCategoryId;
     if (!id) {
       return this.filterUncategorizedDotColor;
     }
-    return (
-      categories.find((c) => c.id === id)?.color ?? this.filterUncategorizedDotColor
-    );
+    return categoriesById[id]?.color ?? this.filterUncategorizedDotColor;
   }
 
-  countPending(tasks: Task[]): number {
-    return tasks.filter((t) => !t.completed).length;
+  tasksMetaAria(pendingCount: number, completedCount: number): string {
+    return `${pendingCount} pendientes, ${completedCount} completadas`;
   }
 
-  countCompleted(tasks: Task[]): number {
-    return tasks.filter((t) => t.completed).length;
-  }
-
-  tasksMetaAria(tasks: Task[]): string {
-    const p = this.countPending(tasks);
-    const c = this.countCompleted(tasks);
-    return `${p} pendientes, ${c} completadas`;
+  loadMoreTasks(ev: Event): void {
+    this.renderLimit$.next(this.renderLimit$.value + this.pageSize);
+    (ev as InfiniteScrollCustomEvent).target.complete();
   }
 
   get taskFormModalTitle(): string {
@@ -138,7 +150,9 @@ export class TaskListPage {
   beginEditTask(task: Task): void {
     this.editingTaskId = task.id;
     this.draftTitle = task.title;
-    this.draftCategoryId = task.categoryId ?? '';
+    this.draftCategoryId = this.featureFlagsService.categoriesEnabled
+      ? (task.categoryId ?? '')
+      : '';
     this.taskFormModalOpen = true;
     this.cdr.markForCheck();
   }
@@ -164,8 +178,9 @@ export class TaskListPage {
     if (!title) {
       return;
     }
-    const categoryId =
-      this.draftCategoryId === '' ? null : this.draftCategoryId;
+    const categoryId = this.featureFlagsService.categoriesEnabled
+      ? (this.draftCategoryId === '' ? null : this.draftCategoryId)
+      : null;
     if (this.editingTaskId) {
       this.taskService.updateTaskDetails(
         this.editingTaskId,
@@ -216,20 +231,77 @@ export class TaskListPage {
   }
 }
 
-function filterTasks(tasks: Task[], filter: string): Task[] {
-  if (filter === 'all') {
-    return tasks;
-  }
-  if (filter === 'uncategorized') {
-    return tasks.filter((t) => !t.categoryId);
-  }
-  return tasks.filter((t) => t.categoryId === filter);
-}
-
 /** Si el filtro apunta a una categoría que ya no existe, se usa «todas». */
 function resolveFilter(filter: string, categories: Category[]): string {
   if (filter === 'all' || filter === 'uncategorized') {
     return filter;
   }
   return categories.some((c) => c.id === filter) ? filter : 'all';
+}
+
+function toCategoryDictionary(categories: Category[]): Record<string, Category> {
+  const byId: Record<string, Category> = {};
+  for (const category of categories) {
+    byId[category.id] = category;
+  }
+  return byId;
+}
+
+function projectVisibleTasks(
+  tasks: Task[],
+  categoriesEnabled: boolean,
+  categoriesById: Record<string, Category>,
+  filter: string,
+  renderLimit: number
+): {
+  visibleTasks: TaskListItemViewModel[];
+  totalTasks: number;
+  pendingCount: number;
+  completedCount: number;
+  hasMoreTasks: boolean;
+} {
+  const visibleTasks: TaskListItemViewModel[] = [];
+  let totalTasks = 0;
+  let pendingCount = 0;
+
+  for (const task of tasks) {
+    if (!matchesTaskFilter(task, categoriesEnabled, filter)) {
+      continue;
+    }
+    totalTasks += 1;
+    if (!task.completed) {
+      pendingCount += 1;
+    }
+    if (visibleTasks.length < renderLimit) {
+      const category = task.categoryId ? categoriesById[task.categoryId] : undefined;
+      visibleTasks.push({
+        task,
+        categoryName: category?.name ?? 'Sin categoría',
+        categoryDotColor: category?.color ?? FILTER_SEGMENT_UNCATEGORIZED_COLOR,
+      });
+    }
+  }
+
+  const completedCount = totalTasks - pendingCount;
+  return {
+    visibleTasks,
+    totalTasks,
+    pendingCount,
+    completedCount,
+    hasMoreTasks: totalTasks > renderLimit,
+  };
+}
+
+function matchesTaskFilter(
+  task: Task,
+  categoriesEnabled: boolean,
+  filter: string
+): boolean {
+  if (!categoriesEnabled || filter === 'all') {
+    return true;
+  }
+  if (filter === 'uncategorized') {
+    return !task.categoryId;
+  }
+  return task.categoryId === filter;
 }

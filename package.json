@@ -29,6 +29,7 @@
     "@ionic/angular": "^8.0.0",
     "@ionic/cordova-builders": "^12.3.0",
     "@ionic/storage-angular": "^4.0.0",
+    "firebase": "latest",
     "ionicons": "^7.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
