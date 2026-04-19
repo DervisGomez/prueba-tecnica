@@ -29,7 +29,7 @@ Segun las instrucciones de la prueba, conviene trabajar en una **rama** dedicada
 | Optimizacion de rendimiento (carga, muchas tareas, memoria) | **Listo** — mejoras en app + informe con metricas en `docs/respuestas-entrega.md` |
 | APK / IPA y enlaces de descarga | **Pendiente de entrega** — generar builds y publicar enlaces (Drive, Releases, etc.) |
 | Evidencia visual (capturas o video de funcionalidades y del flag) | **Pendiente** — recomendado adjuntar o enlazar fuera del repo |
-| Respuestas escritas: desafios, optimizacion, calidad/mantenibilidad | **Parcial** — la parte de optimizacion y medicion esta en `docs/respuestas-entrega.md`; faltan texto dedicado a desafios y a calidad si se exige por separado |
+| Respuestas escritas: desafios, optimizacion, calidad/mantenibilidad | **Listo** — reflexion corta en [`docs/reflexion-entrega.md`](docs/reflexion-entrega.md); metricas de rendimiento en [`docs/respuestas-entrega.md`](docs/respuestas-entrega.md) |
 
 ## Alcance implementado (detalle)
 
@@ -286,7 +286,7 @@ Recomendado agregar pruebas para:
 | Codigo + README | **Si** — este archivo y codigo en `src/` |
 | Evidencia visual (capturas o video) | **Pendiente** — anadir enlaces o carpeta `docs/evidence/` con assets |
 | APK e IPA + enlaces de descarga | **Pendiente** — no se versionan binarios; documentar URLs al subirlos |
-| Respuestas: desafios, optimizacion, calidad | **Parcial** — optimizacion y medicion en [`docs/respuestas-entrega.md`](docs/respuestas-entrega.md); opcional ampliar con secciones de desafios y calidad en el mismo doc o en otro `.md` |
+| Respuestas: desafios, optimizacion, calidad | **Listo** — [`docs/reflexion-entrega.md`](docs/reflexion-entrega.md); detalle de medicion en [`docs/respuestas-entrega.md`](docs/respuestas-entrega.md) |
 
 ## Checklist final de entrega
 
@@ -298,7 +298,7 @@ Recomendado agregar pruebas para:
 - [ ] APK generado y **enlace de descarga** publicado
 - [ ] IPA generado y **enlace de descarga** publicado (o nota de imposibilidad sin macOS / uso de CI)
 - [ ] Capturas o video de **funcionalidades de producto** (tareas, categorias, filtro, flag si aplica)
-- [ ] Texto de entrega: **desafios** y **calidad/mantenibilidad** (mas alla del informe de rendimiento), si los evaluadores lo piden por separado
+- [x] Texto de entrega: **desafios**, **optimizacion** y **calidad/mantenibilidad** — [`docs/reflexion-entrega.md`](docs/reflexion-entrega.md)
 
 ## Notas sobre IPA en Linux/Windows
 
