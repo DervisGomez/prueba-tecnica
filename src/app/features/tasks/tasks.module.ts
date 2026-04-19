@@ -3,10 +3,9 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
-import { HomePage } from './home.page';
+import { TaskListPage } from './task-list.page';
 
-import { HomePageRoutingModule } from './home-routing.module';
-
+import { TasksRoutingModule } from './tasks-routing.module';
 
 @NgModule({
   imports: [
@@ -14,8 +13,8 @@ import { HomePageRoutingModule } from './home-routing.module';
     FormsModule,
     RouterModule,
     IonicModule,
-    HomePageRoutingModule
+    TasksRoutingModule,
   ],
-  declarations: [HomePage]
+  declarations: [TaskListPage],
 })
-export class HomePageModule {}
+export class TasksModule {}

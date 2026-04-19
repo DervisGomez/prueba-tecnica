@@ -8,27 +8,27 @@ import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
 import {
   FILTER_SEGMENT_ALL_COLOR,
   FILTER_SEGMENT_UNCATEGORIZED_COLOR,
-} from '../core/constants/filter-segment-colors';
-import { Category } from '../core/models/category.model';
-import { Task } from '../core/models/task.model';
-import { CategoryService } from '../core/services/category.service';
-import { TaskService } from '../core/services/task.service';
+} from '../../core/constants/filter-segment-colors';
+import { Category } from '../../core/models/category.model';
+import { Task } from '../../core/models/task.model';
+import { CategoryService } from '../../core/services/category.service';
+import { TaskService } from '../../core/services/task.service';
 
-export interface HomeViewModel {
+export interface TaskListViewModel {
   tasks: Task[];
   categories: Category[];
   filter: string;
 }
 
 @Component({
-  selector: 'app-home',
-  templateUrl: 'home.page.html',
-  styleUrls: ['home.page.scss'],
+  selector: 'app-task-list',
+  templateUrl: 'task-list.page.html',
+  styleUrls: ['task-list.page.scss'],
   standalone: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HomePage {
-  readonly vm$: Observable<HomeViewModel>;
+export class TaskListPage {
+  readonly vm$: Observable<TaskListViewModel>;
   /** Color del punto «Todas» (no coincide con la paleta de categorías). */
   readonly filterAllDotColor = FILTER_SEGMENT_ALL_COLOR;
   /** Color del punto «Sin categoría». */

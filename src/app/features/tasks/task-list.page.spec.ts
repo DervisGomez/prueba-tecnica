@@ -2,17 +2,17 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AlertController, IonicModule } from '@ionic/angular';
 import { of } from 'rxjs';
 
-import { HomePage } from './home.page';
-import { TaskService } from '../core/services/task.service';
-import { CategoryService } from '../core/services/category.service';
+import { TaskListPage } from './task-list.page';
+import { TaskService } from '../../core/services/task.service';
+import { CategoryService } from '../../core/services/category.service';
 
-describe('HomePage', () => {
-  let component: HomePage;
-  let fixture: ComponentFixture<HomePage>;
+describe('TaskListPage', () => {
+  let component: TaskListPage;
+  let fixture: ComponentFixture<TaskListPage>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [HomePage],
+      declarations: [TaskListPage],
       imports: [IonicModule.forRoot()],
       providers: [
         {
@@ -39,7 +39,7 @@ describe('HomePage', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(HomePage);
+    fixture = TestBed.createComponent(TaskListPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

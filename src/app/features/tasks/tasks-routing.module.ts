@@ -1,16 +1,16 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { HomePage } from './home.page';
+import { TaskListPage } from './task-list.page';
 
 const routes: Routes = [
   {
     path: '',
-    component: HomePage,
+    component: TaskListPage,
   },
   {
     path: 'categorias',
     loadChildren: () =>
-      import('./categories/categories.module').then(
+      import('../categories/categories.module').then(
         (m) => m.CategoriesPageModule
       ),
   },
@@ -18,6 +18,6 @@ const routes: Routes = [
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class HomePageRoutingModule {}
+export class TasksRoutingModule {}
