@@ -1,5 +1,65 @@
+# Codemagic: build IPA iOS (Ionic + Cordova).
+#
+# Requisitos en Codemagic (Team settings):
+# 1) Integrations > Developer Portal / App Store Connect: API key (.p8) con nombre
+#    que COINCIDA con "integrations.app_store_connect" abajo (ej. prueba-tecnica-asc).
+# 2) Code signing: certificado + perfil para bundle io.pruebatecnica.co, o fetch
+#    automatico segun guia Codemagic + ios_signing.
+# 3) Si el scheme o el .xcworkspace fallan, revisa el log de Xcode; el nombre sale
+#    de <name> en config.xml ("Prueba Tecnica").
+#
+# Doc: https://docs.codemagic.io/yaml-quick-start/building-a-cordova-app/
+
 workflows:
-  sample-workflow:
-    name: Codemagic Sample Workflow
+  ios-ipa:
+    name: iOS IPA (Ionic Cordova)
     max_build_duration: 120
     instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: prueba-tecnica-asc
+    environment:
+      xcode: latest
+      node: 20
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: io.pruebatecnica.co
+      vars:
+        XCODE_WORKSPACE: "platforms/ios/Prueba Tecnica.xcworkspace"
+        XCODE_SCHEME: "Prueba Tecnica"
+    scripts:
+      - name: Instalar dependencias npm y CLI
+        script: |
+          set -e
+          npm ci
+          npm install -g @ionic/cli cordova
+      - name: Plataforma Cordova iOS
+        script: |
+          set -e
+          ionic cordova platform rm ios --nosave --no-interactive || true
+          ionic cordova platform add ios --confirm --no-interactive --noresources --save
+      - name: CocoaPods (iOS)
+        script: |
+          set -e
+          cd platforms/ios && pod install
+      - name: Aplicar perfiles de firma al proyecto Xcode
+        script: |
+          xcode-project use-profiles
+      - name: Generar IPA
+        script: |
+          set -e
+          package_type=$(defaults read "$HOME/export_options.plist" method)
+          identity=$(defaults read "$HOME/export_options.plist" signingCertificate)
+          team=$(defaults read "$HOME/export_options.plist" teamID)
+          profile=$(find "$HOME/Library/MobileDevice/Provisioning Profiles" -name "*.mobileprovision" | head -1)
+          profile_uuid=$(grep UUID -A1 -a "$profile" | grep -io "[-A-F0-9]\{36\}")
+          jq -n \
+            --arg id "$identity" \
+            --arg team "$team" \
+            --arg pt "$package_type" \
+            --arg uuid "$profile_uuid" \
+            '{ios:{release:{codeSignIdentity:$id,developmentTeam:$team,packageType:$pt,provisioningProfile:$uuid}}}' \
+            > build-ios-signing.json
+          cordova build ios --release --device --buildConfig=build-ios-signing.json
+    artifacts:
+      - platforms/ios/build/device/*.ipa
+      - /tmp/xcodebuild_logs/*.log
