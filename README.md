@@ -2,10 +2,13 @@
 
 Aplicacion To-Do desarrollada con Ionic y Angular, con soporte hibrido para Android/iOS via Cordova.
 
+**Repositorio publico:** [https://github.com/DervisGomez/prueba-tecnica](https://github.com/DervisGomez/prueba-tecnica)
+
 ## Repositorio (versionamiento)
 
-- **GitHub (repositorio publico):** [github.com/DervisGomez/prueba-tecnica](https://github.com/DervisGomez/prueba-tecnica)
-- **Clonar el codigo:**
+- **GitHub:** [github.com/DervisGomez/prueba-tecnica](https://github.com/DervisGomez/prueba-tecnica)
+- **Remoto Git:** `https://github.com/DervisGomez/prueba-tecnica.git`
+- **Clonar:**
 
 ```bash
 git clone https://github.com/DervisGomez/prueba-tecnica.git
@@ -14,17 +17,28 @@ cd prueba-tecnica
 
 Segun las instrucciones de la prueba, conviene trabajar en una **rama** dedicada y entregar el enlace al remoto con el historial de **commits** claro (mensajes descriptivos, cambios acotados por commit).
 
-## Alcance implementado
+## Estado frente al enunciado (resumen)
 
-- CRUD de tareas: crear, editar, completar y eliminar.
-- Persistencia local con `@ionic/storage-angular`.
-- Modulo de categorias:
-  - crear categoria,
-  - editar categoria,
-  - eliminar categoria,
-  - asignar categoria a tareas,
-  - filtrar tareas por categoria.
-- UI movil con Ionic Components y enrutamiento modular.
+| Requisito de la prueba | Estado |
+| --- | --- |
+| Repositorio Git publico y codigo versionado | **Listo** — enlace arriba |
+| Estructura Cordova Android + iOS e instrucciones en README | **Listo** — `config.xml`, plataformas en `package.json`, secciones Android/iOS |
+| App base To-Do (agregar, completar, eliminar; edicion) | **Listo** |
+| Categorias (CRUD, asignar a tarea, filtrar) | **Listo** |
+| Firebase + Remote Config (feature flag) | **Listo en codigo** — proyecto en `environment*.ts`; en consola Firebase debe existir el parametro booleano `enable_categories` |
+| Optimizacion de rendimiento (carga, muchas tareas, memoria) | **Listo** — mejoras en app + informe con metricas en `docs/respuestas-entrega.md` |
+| APK / IPA y enlaces de descarga | **Pendiente de entrega** — generar builds y publicar enlaces (Drive, Releases, etc.) |
+| Evidencia visual (capturas o video de funcionalidades y del flag) | **Pendiente** — recomendado adjuntar o enlazar fuera del repo |
+| Respuestas escritas: desafios, optimizacion, calidad/mantenibilidad | **Parcial** — la parte de optimizacion y medicion esta en `docs/respuestas-entrega.md`; faltan texto dedicado a desafios y a calidad si se exige por separado |
+
+## Alcance implementado (detalle)
+
+- **Tareas:** CRUD completo (crear, editar, completar, eliminar) con persistencia local (`@ionic/storage-angular`).
+- **Categorias:** crear, editar, eliminar; asignar categoria a cada tarea; filtrar listado por categoria; UI en `src/app/features/categories/`.
+- **UI y rutas:** Ionic Components, enrutamiento modular, guard de acceso a categorias segun feature flag (`src/app/core/guards/categories-feature.guard.ts`).
+- **Firebase Remote Config:** servicio `src/app/core/services/feature-flags.service.ts`; flag `enable_categories` condiciona rutas, filtros, selector en formulario y gestion de categorias.
+- **Rendimiento:** `ChangeDetectionStrategy.OnPush`, lista con `ion-infinite-scroll`, proyeccion de estado en una pasada, mapa `id -> categoria`, orden unico con `sort` (ver seccion mas abajo).
+- **Datos de prueba / laboratorio:** en desarrollo, funciones globales `seedPerfScenario` / `clearPerfScenario` en consola del navegador (documentadas en este README).
 
 ## Stack tecnico
 
@@ -115,7 +129,7 @@ Desde Xcode:
 
 ## Firebase + Remote Config (Feature Flag)
 
-> Estado actual: integrado en codigo (requiere configurar credenciales Firebase y ejecutar instalacion de dependencias).
+**Estado:** integracion lista en la aplicacion (`firebase` + `getRemoteConfig` en `feature-flags.service.ts`, configuracion en `src/environments/environment.ts` y `environment.prod.ts`). Tras `npm install`, la app inicializa Firebase cuando `firebase.enabled` es `true` y la configuracion esta completa.
 
 ### Objetivo de la feature flag
 
@@ -128,26 +142,18 @@ En esta app se usa el flag remoto `enable_categories` para mostrar/ocultar:
 - selector de categoria en formulario de tarea,
 - acceso a la ruta `categorias`.
 
-### Pasos sugeridos de implementacion
+### Checklist en Firebase Console (para quien despliegue o evalúe)
 
-1. Crear proyecto en Firebase Console.
-2. Agregar apps Android/iOS y descargar:
-   - `google-services.json` (Android)
-   - `GoogleService-Info.plist` (iOS)
-3. Integrar Firebase en Ionic/Angular.
-4. Completar `src/environments/environment.ts` y `src/environments/environment.prod.ts`:
-   - `firebase.enabled = true`
-   - `firebase.config` con datos reales del proyecto
-5. Configurar Remote Config con parametro booleano:
-   - `enable_categories = true|false`
-6. Consumir flag al iniciar app y condicionar UI/rutas.
-7. Documentar prueba funcional:
-   - valor `true`: categoria visible y usable
-   - valor `false`: categoria oculta o bloqueada
+1. Proyecto Firebase con app Web (y opcionalmente Android/iOS para builds nativos).
+2. **Remote Config:** crear parametro **booleano** `enable_categories` (valores por defecto y condiciones segun necesidad).
+3. Publicar cambios de Remote Config tras editarlos.
+4. **Prueba funcional:** con `true`, categorias visibles y ruta accesible; con `false`, UI de categorias y filtro desactivados segun implementacion actual.
+
+Archivos nativos opcionales para builds Cordova: `google-services.json` (Android), `GoogleService-Info.plist` (iOS), segun guia de Firebase para Cordova.
 
 ## Optimizacion de rendimiento
 
-> Estado actual: optimizacion funcional aplicada y lista para evidenciar en pruebas.
+**Estado:** mejoras aplicadas en codigo e **informe de medicion** en [`docs/respuestas-entrega.md`](docs/respuestas-entrega.md) (LCP, INP, CLS, heap snapshots, escenarios S1/S2/S3). Lista de capturas referenciada en `docs/evidence/FILES.txt` (subir los PNG al repo o enlazarlos si se entregan fuera).
 
 ### Mejoras aplicadas
 
@@ -161,13 +167,7 @@ En esta app se usa el flag remoto `enable_categories` para mostrar/ocultar:
 - Eliminacion de busquedas repetidas por categoria en template (diccionario `id -> categoria`).
 - Ordenamiento de tareas optimizado con una sola pasada de `sort` (antes se hacian filtros + sort por separado).
 
-### Pendiente para cerrar evidencia de la prueba
-
-- Medir y documentar tiempos de carga inicial y fluidez con volumen alto de datos.
-- Registrar evidencia de memoria/render (capturas del profiler o video de comparativa).
-- Justificar en el README el impacto de cada mejora con resultados observables.
-
-### Protocolo de medicion y evidencia (para entrega)
+### Protocolo de medicion y evidencia (reproducir en laboratorio)
 
 #### 1) Escenarios de volumen
 
@@ -279,33 +279,26 @@ Recomendado agregar pruebas para:
 - `CategoryService` (CRUD + descategorizacion de tareas al borrar)
 - filtro por categoria en vista de tareas
 
-## Entregables esperados
+## Entregables de la prueba (que pide el enunciado vs este repo)
 
-- Codigo fuente actualizado en Git (rama de trabajo + PR/fork).
-- README con pasos de compilacion y cambios.
-- Evidencia visual (capturas o video).
-- APK generado.
-- IPA generado (si aplica por disponibilidad de Mac).
-- Respuestas documentadas:
-  - desafios principales,
-  - optimizaciones aplicadas,
-  - estrategia de calidad y mantenibilidad.
-
-Informe detallado de rendimiento (para evaluadores):
-
-- `docs/respuestas-entrega.md` (solo reporte de rendimiento)
+| Entregable | En este repositorio |
+| --- | --- |
+| Codigo + README | **Si** — este archivo y codigo en `src/` |
+| Evidencia visual (capturas o video) | **Pendiente** — anadir enlaces o carpeta `docs/evidence/` con assets |
+| APK e IPA + enlaces de descarga | **Pendiente** — no se versionan binarios; documentar URLs al subirlos |
+| Respuestas: desafios, optimizacion, calidad | **Parcial** — optimizacion y medicion en [`docs/respuestas-entrega.md`](docs/respuestas-entrega.md); opcional ampliar con secciones de desafios y calidad en el mismo doc o en otro `.md` |
 
 ## Checklist final de entrega
 
-- [x] Repositorio publico actualizado con commits claros. Remoto: `https://github.com/DervisGomez/prueba-tecnica.git`
-- [ ] README completo y validado por otra persona.
-- [ ] Firebase y Remote Config funcionando.
-- [ ] Feature flag demostrada con evidencia.
-- [ ] Rendimiento optimizado y justificado.
-- [ ] APK exportado y enlace de descarga disponible.
-- [ ] IPA exportado y enlace de descarga disponible (o justificacion tecnica).
-- [ ] Capturas/video de funcionalidades.
-- [ ] Documento de respuestas finales redactado.
+- [x] Repositorio publico con historial Git — [https://github.com/DervisGomez/prueba-tecnica](https://github.com/DervisGomez/prueba-tecnica)
+- [x] README con instalacion, Cordova Android/iOS, Firebase/Remote Config, rendimiento y mapa de estado de la prueba
+- [x] Firebase y Remote Config integrados en aplicacion (verificar param `enable_categories` en consola y publicar cambios)
+- [x] Feature flag `enable_categories` implementada en codigo (evidencia visual o video: pendiente si se exige explicitamente)
+- [x] Rendimiento optimizado en codigo y justificado con informe — [`docs/respuestas-entrega.md`](docs/respuestas-entrega.md)
+- [ ] APK generado y **enlace de descarga** publicado
+- [ ] IPA generado y **enlace de descarga** publicado (o nota de imposibilidad sin macOS / uso de CI)
+- [ ] Capturas o video de **funcionalidades de producto** (tareas, categorias, filtro, flag si aplica)
+- [ ] Texto de entrega: **desafios** y **calidad/mantenibilidad** (mas alla del informe de rendimiento), si los evaluadores lo piden por separado
 
 ## Notas sobre IPA en Linux/Windows
 
