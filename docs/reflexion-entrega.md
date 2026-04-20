@@ -1,47 +1,47 @@
 # Respuestas breves (entrega de prueba tecnica)
 
-Documento corto con las tres reflexiones pedidas en el enunciado. El detalle de medicion de rendimiento sigue en [`informe-rendimiento.md`](informe-rendimiento.md).
+Tres reflexiones alineadas con el enunciado. El detalle de medicion de rendimiento (LCP, INP, heap, escenarios S1/S2/S3) esta en [`informe-rendimiento.md`](informe-rendimiento.md).
 
 ---
 
 ## 1. Principales desafios al implementar las nuevas funcionalidades
 
-**Entorno iOS sin Mac.** Apple exige macOS y Xcode para firmar y generar un `.ipa`. Sin Mac no pude validar el build iOS de punta a punta en hardware real ni automatizar el archive localmente. La salida practica fue dejar la plataforma `cordova-ios` declarada y documentada en el README, desarrollar y probar en Android y en navegador, y planear la exportacion del IPA mediante una Mac ajena, un servicio CI con runner macOS (por ejemplo CodeMagic o Ionic Appflow) o un prestamo temporal de equipo Apple. Eso suma tiempo de coordinacion y a veces coste, pero no bloquea el desarrollo de la logica ni la paridad de codigo entre plataformas.
+**Pipeline iOS sin estacion de trabajo macOS.** La compilacion y firma iOS supone Xcode en macOS; sin Mac local no se valido el flujo completo en dispositivo fisico ni el archive local. La mitigacion adoptada fue: mantener `cordova-ios` en el proyecto, desarrollar y probar la logica compartida en **Android** y en **navegador**, y dejar documentado el camino hacia IPA mediante **CI con runner macOS** ([`codemagic.yaml`](../codemagic.yaml), workflow `ios-ipa`), descrito paso a paso en el README.
 
-**Coherencia entre categorias, tareas y feature flag.** Hubo que definir bien que ocurre cuando Remote Config desactiva categorias: rutas protegidas con guard, datos existentes en almacenamiento local y una UX que no deje al usuario en callejones sin salida. Requirio acoplar el servicio de flags con el enrutamiento y con los formularios sin duplicar condiciones en muchos sitios.
+**Distribucion IPA (Apple Developer Program).** Para obtener un `.ipa` firmado de forma habitual (perfil de distribucion, integracion con App Store Connect) Apple exige **Apple Developer Program** (cuenta de pago) y credenciales configuradas en el proveedor de CI. En esta entrega **no se adjunta enlace publico a un IPA**: el bloqueo es de **acceso a firma y cuentas**, no de estructura del pipeline. El repositorio incluye workflow `ios-ipa` en Codemagic (`npm ci`, Ionic/Cordova, plataforma iOS, `pod install`, `xcode-project use-profiles`, `cordova build ios --release --device` con `build-ios-signing.json`, artefacto `platforms/ios/build/device/*.ipa`). Referencia: [Codemagic — Ionic Cordova](https://docs.codemagic.io/yaml-quick-start/building-a-cordova-app/).
 
-**Rendimiento con muchas tareas.** Al crecer el volumen, el cuello dejo de ser solo "cargar datos" y paso a ser interactividad (filtros, toggles, scroll) y memoria. Fue un desafio medir con criterio (DevTools, escenarios reproducibles) y decidir hasta donde compensaba optimizar en el cliente frente a asumir limites razonables de uso.
+**Coherencia entre categorias, tareas y Remote Config.** Con el flag `enable_categories` en falso hay que mantener **rutas coherentes** (guard), **datos locales** que siguen existiendo y una **UX** sin pantallas rotas ni rutas huerfanas. El trabajo fue centralizar el estado del flag en un servicio y enlazarlo a enrutamiento y formularios **sin repetir** la misma condicion en muchos componentes.
 
-**IPA iOS sin Apple Developer Program.** Ademas del factor Mac, Apple exige la suscripcion **Apple Developer Program** para certificados y perfiles de **distribucion** con los que herramientas como **Codemagic** pueden firmar y publicar un `.ipa` de forma estandar (TestFlight / dispositivos de evaluacion). En esta entrega **no hay enlace a un IPA** por esa limitacion economica/contractual, no por desconocer el flujo: el repositorio incluye [`codemagic.yaml`](../codemagic.yaml) con el workflow `ios-ipa` (npm, Cordova iOS, CocoaPods, `xcode-project use-profiles`, artefacto IPA) y el README describe los pasos que un evaluador u otra persona con cuenta Apple debe completar en Codemagic. La documentacion de referencia es la de Codemagic para [Ionic Cordova](https://docs.codemagic.io/yaml-quick-start/building-a-cordova-app/).
+**Rendimiento con mucho volumen.** Al subir el numero de tareas, el cuello de botella deja de ser solo la carga inicial y pasa a **interactividad** (filtros, toggles, scroll) y **memoria / DOM**. El desafio fue definir un **protocolo reproducible** (DevTools, `seedPerfScenario` en desarrollo) y priorizar optimizaciones con impacto medible frente a un uso del cliente razonablemente acotado.
 
 ---
 
 ## 2. Tecnicas de optimizacion de rendimiento aplicadas y por que
 
-Se aplicaron cambios centrados en **menos trabajo por ciclo de deteccion de cambios**, **menos nodos en pantalla a la vez** y **menos pasadas sobre colecciones grandes**:
+Enfoque en **menos deteccion de cambios innecesaria**, **menos nodos visibles a la vez** y **menos pasadas sobre colecciones grandes**:
 
-- **`ChangeDetectionStrategy.OnPush`** en vistas pesadas, para que Angular no reevaluie plantillas salvo cuando cambian entradas referenciales o se dispara deteccion explicita. Reduce costo CPU cuando la lista o el estado cambian con frecuencia moderada.
+- **`ChangeDetectionStrategy.OnPush`** en las vistas mas sensibles al listado, para limitar reevaluaciones de plantilla cuando no cambian entradas relevantes.
 
-- **Lista incremental con `ion-infinite-scroll`** y tamano de pagina acotado, para no montar miles de filas DOM de golpe. Mejora carga percibida y memoria frente a renderizar todo el dataset.
+- **`ion-infinite-scroll`** con pagina de tamano fijo, para no montar todo el dataset en el DOM de una sola vez (mejor percepcion de carga y menos presion inicial sobre memoria).
 
-- **Proyeccion del estado en una sola pasada** sobre las tareas (filtrado, conteos y lista visible derivada en un mismo flujo), en lugar de recalcular fragmentos sueltos en varios sitios. Menos recorridos repetidos sobre arrays grandes.
+- **Proyeccion de estado en una sola pasada** (filtrado, conteos y lista derivada en un flujo coherente), frente a recalcular fragmentos en varios puntos del arbol de componentes.
 
-- **Mapa `id -> categoria`** para resolver etiquetas en la vista sin buscar en un array por cada fila renderizada.
+- **Mapa `id -> categoria`** para resolver etiquetas en vista sin buscar en un array por cada fila.
 
-- **Un unico `sort`** al ordenar tareas al persistir o reordenar, en lugar de encadenar filtros y ordenaciones redundantes.
+- **Un solo `sort`** al ordenar o persistir tareas, evitando cadenas redundantes de filtro + orden.
 
-El **por que** de cada punto esta alineado con los tres ejes del enunciado: carga inicial mas controlada, interaccion mas estable con muchas tareas y menor presion sobre heap y listeners. Las mediciones concretas (LCP, INP, heap snapshots en escenarios S1/S2/S3) estan documentadas en `informe-rendimiento.md`.
+Estas decisiones responden a los tres ejes del enunciado (carga, listas grandes, memoria). Las cifras y capturas estan en [`informe-rendimiento.md`](informe-rendimiento.md).
 
 ---
 
 ## 3. Como se aseguro la calidad y la mantenibilidad del codigo
 
-- **Estructura por capas y features:** servicios de dominio (`TaskService`, `CategoryService`), modelos tipados, guard de rutas para el flag y paginas Ionic en modulos de feature. Facilita localizar cambios y evitar logica duplicada en componentes.
+- **Arquitectura por features:** servicios de dominio (`TaskService`, `CategoryService`), modelos tipados, guard de rutas ligado al feature flag y paginas Ionic en modulos por capacidad. Reduce acoplamiento y facilita ubicar cambios.
 
-- **Herramientas del proyecto:** uso de **ESLint** y comandos documentados (`npm run lint`, `npm test`) como red de seguridad basica ante regresiones de estilo y errores evidentes.
+- **Herramientas estandar del repo:** ESLint y comandos documentados (`npm run lint`, `npm test`) como comprobacion basica antes de entregar.
 
-- **Configuracion y despliegue claros:** variables de entorno para Firebase y Remote Config, README con pasos de Cordova, Firebase y laboratorio de rendimiento, para que otra persona pueda reproducir el entorno sin adivinar.
+- **Reproducibilidad:** variables en `environment*.ts` para Firebase/Remote Config, README con Cordova, Firebase y protocolo de laboratorio de rendimiento.
 
-- **Comportamiento degradable:** si Firebase no esta disponible o la configuracion esta incompleta, el servicio de flags puede caer a valores por defecto sin tumbar la app entera, lo que mejora robustez en desarrollo y revisiones.
+- **Degradacion controlada:** si Firebase no esta disponible o la configuracion es incompleta, el servicio de flags puede usar **valores por defecto** sin tumbar la aplicacion, lo que simplifica revision local y entornos parciales.
 
-La mantenibilidad se apoya en nombres consistentes, responsabilidades separadas (UI vs persistencia vs flags remotos) y documentacion que enlaza codigo con criterios de prueba y entrega.
+La mantenibilidad se apoya en **nombres y responsabilidades claras** (UI frente a persistencia frente a flags remotos) y en documentacion que conecta **codigo**, **criterios de prueba** y **entregables** del enunciado.
