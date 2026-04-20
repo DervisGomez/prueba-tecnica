@@ -1,4 +1,13 @@
-Capturas estandar (PNG) referenciadas en docs/informe-rendimiento.md:
+Capturas en docs/evidence/ (lista de archivos):
+
+Enlaces externos (video en la nube; no versionado en el repo):
+- Google Drive — video con Remote Config enable_categories = true: https://drive.google.com/file/d/1QzJg2CHpry6Qw7OrcuzHJ9G7z9JZ_kDF/view?usp=sharing
+- Google Drive — video con Remote Config enable_categories = false: https://drive.google.com/file/d/18aSUKu6WQ7bf4KkWQg6P35TxoXCrxhhA/view?usp=sharing
+
+Referenciadas en README (CI iOS / Codemagic):
+- codemagic-ios-ipa-signing-error.png (build ios-ipa: error de perfiles Apple / app_store para io.pruebatecnica.co)
+
+Referenciadas en docs/informe-rendimiento.md:
 
 Performance:
 - s1-live-metrics.png

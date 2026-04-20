@@ -1,7 +1,8 @@
 export const environment = {
   production: true,
   firebase: {
-    enabled: false,
+    /** Debe ser true en release para que Remote Config alimente los feature flags en APK/IPA (mismo proyecto que en `environment.ts`). */
+    enabled: true,
     config: {
       apiKey: "AIzaSyDVH7P1A9WWncV-4qZD6mLVW5MLg7HexCA",
       authDomain: "prueba-tecnica-pragma.firebaseapp.com",
@@ -13,6 +14,7 @@ export const environment = {
     },
   },
   remoteConfig: {
-    minimumFetchIntervalMillis: 3_600_000,
+    /** Mismo intervalo que en dev: en produccion real subir (p. ej. 3600000) para no martillar el API. */
+    minimumFetchIntervalMillis: 60_000,
   },
 };

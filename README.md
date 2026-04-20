@@ -24,6 +24,13 @@ Segun las instrucciones de la prueba, conviene trabajar en una **rama** dedicada
 
 Build **release** firmada; instalar en dispositivo Android permitiendo fuentes desconocidas si el sistema lo pide.
 
+El `app-release.apk` en **Assets** de ese release se actualizo para el ultimo build: Firebase activo en produccion (`environment.prod.ts`) y **Remote Config** operativo en el APK (mismo enlace de descarga).
+
+## Evidencia visual (producto y Remote Config)
+
+- **Video — Remote Config `enable_categories` = true** (categorias visibles): [Google Drive — reproducir](https://drive.google.com/file/d/1QzJg2CHpry6Qw7OrcuzHJ9G7z9JZ_kDF/view?usp=sharing)
+- **Video — Remote Config `enable_categories` = false** (categorias ocultas / sin gestion ni filtro): [Google Drive — reproducir](https://drive.google.com/file/d/18aSUKu6WQ7bf4KkWQg6P35TxoXCrxhhA/view?usp=sharing)
+
 ## iOS, IPA y Codemagic (CI sin Mac)
 
 ### Situacion de la entrega
@@ -31,6 +38,14 @@ Build **release** firmada; instalar en dispositivo Android permitiendo fuentes d
 - **Sin Mac local:** la compilacion iOS se plantea en **Codemagic** (runner macOS en la nube), alineado con el enunciado de la prueba.
 - **Sin Apple Developer Program (cuenta de pago):** Apple exige suscripcion activa para **certificados de distribucion**, **perfiles de aprovisionamiento** y uso estable de **App Store Connect API** con los que Codemagic firma y exporta un **IPA** instalable fuera de un entorno de desarrollo muy limitado. **Por eso no hay enlace publico a un `.ipa`** en esta entrega: no es un vacio de conocimiento sobre CI, sino un **requisito externo** que no estaba disponible en el momento de la entrega.
 - **Lo que si queda en el repositorio:** el workflow declarado en [`codemagic.yaml`](codemagic.yaml) (workflow `ios-ipa`: dependencias npm, `ionic cordova` iOS, CocoaPods, `xcode-project use-profiles`, generacion del IPA como artefacto). Documentacion oficial seguida: [Ionic Cordova en Codemagic](https://docs.codemagic.io/yaml-quick-start/building-a-cordova-app/).
+
+### Evidencia de pipeline Codemagic (firma Apple)
+
+Se ejecuto un build del workflow **`ios-ipa`**. El error esperado sin perfiles de distribucion en el equipo de Codemagic confirma que el pipeline usa el bundle **`io.pruebatecnica.co`** y el tipo **`app_store`**:
+
+![Codemagic: error de firma iOS / perfiles](./docs/evidence/codemagic-ios-ipa-signing-error.png)
+
+Mensaje mostrado por Codemagic: *No matching profiles found for bundle identifier `io.pruebatecnica.co` and distribution type `app_store`.* (captura versionada en [`docs/evidence/codemagic-ios-ipa-signing-error.png`](docs/evidence/codemagic-ios-ipa-signing-error.png); listada en [`docs/evidence/FILES.txt`](docs/evidence/FILES.txt)).
 
 ### Que debe completar quien disponga de cuenta Apple (evaluador u otro entorno)
 
@@ -55,8 +70,19 @@ Build **release** firmada; instalar en dispositivo Android permitiendo fuentes d
 | Firebase + Remote Config (feature flag) | **Listo en codigo** — proyecto en `environment*.ts`; en consola Firebase debe existir el parametro booleano `enable_categories` |
 | Optimizacion de rendimiento (carga, muchas tareas, memoria) | **Listo** — mejoras en app + informe con metricas en `docs/informe-rendimiento.md` |
 | APK / IPA y enlaces de descarga | **APK listo** — [release V1.0.0](https://github.com/DervisGomez/prueba-tecnica/releases/tag/V1.0.0). **IPA:** sin binario publico por falta de **Apple Developer Program**; pipeline **Codemagic** documentado arriba y en [`codemagic.yaml`](codemagic.yaml) |
-| Evidencia visual (capturas o video de funcionalidades y del flag) | **Pendiente** — recomendado adjuntar o enlazar fuera del repo |
+| Evidencia visual (capturas o video de funcionalidades y del flag) | **Listo** — [`enable_categories` = true](https://drive.google.com/file/d/1QzJg2CHpry6Qw7OrcuzHJ9G7z9JZ_kDF/view?usp=sharing) / [`enable_categories` = false](https://drive.google.com/file/d/18aSUKu6WQ7bf4KkWQg6P35TxoXCrxhhA/view?usp=sharing) (ver [Evidencia visual](#evidencia-visual-producto-y-remote-config)) |
 | Respuestas escritas: desafios, optimizacion, calidad/mantenibilidad | **Listo** — reflexion corta en [`docs/reflexion-entrega.md`](docs/reflexion-entrega.md); metricas de rendimiento en [`docs/informe-rendimiento.md`](docs/informe-rendimiento.md) |
+
+## Resumen de cambios (entrega)
+
+Lista corta de lo que se añadio o modifico respecto a una To-Do base, para cumplir el enunciado y documentar la entrega:
+
+- **Categorias:** CRUD, asignacion por tarea, filtro en listado y pantallas en `src/app/features/categories/`; guard de rutas segun flag.
+- **Firebase Remote Config:** integracion en `environment*.ts`, servicio de flags (`feature-flags.service.ts`), parametro booleano `enable_categories` que muestra u oculta gestion y filtro de categorias.
+- **Rendimiento:** estrategia OnPush, lista paginada con infinite scroll, proyecciones y mapas para evitar trabajo repetido con muchas tareas; detalle y metricas en [`docs/informe-rendimiento.md`](docs/informe-rendimiento.md).
+- **Build hibrido:** Cordova Android/iOS documentado en este README; APK en [GitHub Releases](https://github.com/DervisGomez/prueba-tecnica/releases/tag/V1.0.0) (artefacto en **Assets** alineado al build con Firebase en prod y Remote Config).
+- **iOS / IPA:** workflow [`codemagic.yaml`](codemagic.yaml) (`ios-ipa`) y seccion README sobre firma; sin `.ipa` publico por requisitos de **Apple Developer Program** (pasos para completarlo con evaluador o cuenta propia).
+- **Documentacion de entrega:** respuestas narrativas en [`docs/reflexion-entrega.md`](docs/reflexion-entrega.md); evidencia de Remote Config en video (enlaces arriba); inventario de ficheros de evidencia en [`docs/evidence/FILES.txt`](docs/evidence/FILES.txt).
 
 ## Alcance implementado (detalle)
 
@@ -312,7 +338,7 @@ Recomendado agregar pruebas para:
 | Entregable | En este repositorio |
 | --- | --- |
 | Codigo + README | **Si** — este archivo y codigo en `src/` |
-| Evidencia visual (capturas o video) | **Pendiente** — anadir enlaces o carpeta `docs/evidence/` con assets |
+| Evidencia visual (capturas o video) | **Listo** — [video flag `true`](https://drive.google.com/file/d/1QzJg2CHpry6Qw7OrcuzHJ9G7z9JZ_kDF/view?usp=sharing), [video flag `false`](https://drive.google.com/file/d/18aSUKu6WQ7bf4KkWQg6P35TxoXCrxhhA/view?usp=sharing) |
 | APK e IPA + enlaces de descarga | **APK** — [release V1.0.0](https://github.com/DervisGomez/prueba-tecnica/releases/tag/V1.0.0) / [descarga directa](https://github.com/DervisGomez/prueba-tecnica/releases/download/V1.0.0/app-release.apk). **IPA** — ver [iOS, IPA y Codemagic](#ios-ipa-y-codemagic-ci-sin-mac): workflow listo; enlace al `.ipa` condicionado a credenciales Apple en Codemagic |
 | Respuestas: desafios, optimizacion, calidad | **Listo** — [`docs/reflexion-entrega.md`](docs/reflexion-entrega.md); detalle de medicion en [`docs/informe-rendimiento.md`](docs/informe-rendimiento.md) |
 
@@ -321,11 +347,11 @@ Recomendado agregar pruebas para:
 - [x] Repositorio publico con historial Git — [https://github.com/DervisGomez/prueba-tecnica](https://github.com/DervisGomez/prueba-tecnica)
 - [x] README con instalacion, Cordova Android/iOS, Firebase/Remote Config, rendimiento y mapa de estado de la prueba
 - [x] Firebase y Remote Config integrados en aplicacion (verificar param `enable_categories` en consola y publicar cambios)
-- [x] Feature flag `enable_categories` implementada en codigo (evidencia visual o video: pendiente si se exige explicitamente)
+- [x] Feature flag `enable_categories` implementada en codigo — videos: [`true`](https://drive.google.com/file/d/1QzJg2CHpry6Qw7OrcuzHJ9G7z9JZ_kDF/view?usp=sharing) / [`false`](https://drive.google.com/file/d/18aSUKu6WQ7bf4KkWQg6P35TxoXCrxhhA/view?usp=sharing)
 - [x] Rendimiento optimizado en codigo y justificado con informe — [`docs/informe-rendimiento.md`](docs/informe-rendimiento.md)
 - [x] APK generado y **enlace de descarga** publicado — [release V1.0.0](https://github.com/DervisGomez/prueba-tecnica/releases/tag/V1.0.0)
 - [x] IPA / iOS: **Codemagic** configurado en [`codemagic.yaml`](codemagic.yaml) y limitacion **sin Apple Developer Program** documentada en README y [`docs/reflexion-entrega.md`](docs/reflexion-entrega.md). **Enlace publico a `.ipa`:** pendiente hasta aportar cuenta Apple + firma en Codemagic (pasos en seccion *iOS, IPA y Codemagic*)
-- [ ] Capturas o video de **funcionalidades de producto** (tareas, categorias, filtro, flag si aplica)
+- [x] Capturas o video de **funcionalidades de producto** — [Remote Config `true`](https://drive.google.com/file/d/1QzJg2CHpry6Qw7OrcuzHJ9G7z9JZ_kDF/view?usp=sharing) / [Remote Config `false`](https://drive.google.com/file/d/18aSUKu6WQ7bf4KkWQg6P35TxoXCrxhhA/view?usp=sharing)
 - [x] Texto de entrega: **desafios**, **optimizacion** y **calidad/mantenibilidad** — [`docs/reflexion-entrega.md`](docs/reflexion-entrega.md)
 
 ## Notas sobre IPA en Linux/Windows
